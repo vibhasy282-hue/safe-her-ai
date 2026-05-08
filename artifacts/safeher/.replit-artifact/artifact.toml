@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "SafeHer — AI Women Safety"
+version = "1.0.0"
+id = "artifacts/safeher"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 26252
+
+[services.development]
+run = "pnpm --filter @workspace/safeher run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/safeher", "run", "build" ]
+publicDir = "artifacts/safeher/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "26252"
+BASE_PATH = "/"

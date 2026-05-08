@@ -1,0 +1,170 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--bg-dark);
+  --color-foreground: var(--text);
+  --color-border: var(--glass-border);
+  --color-input: rgba(255,255,255,0.05);
+  --color-ring: var(--primary-light);
+
+  --color-card: var(--glass);
+  --color-card-foreground: var(--text);
+  --color-card-border: var(--glass-border);
+
+  --color-popover: var(--bg-mid);
+  --color-popover-foreground: var(--text);
+  --color-popover-border: var(--glass-border);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: #ffffff;
+  
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: #ffffff;
+
+  --color-muted: rgba(255,255,255,0.1);
+  --color-muted-foreground: var(--text-muted);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: #ffffff;
+
+  --color-destructive: var(--danger);
+  --color-destructive-foreground: #ffffff;
+
+  --font-sans: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+:root {
+  --primary: #7c3aed;
+  --primary-light: #a78bfa;
+  --secondary: #3b82f6;
+  --accent: #06b6d4;
+  --danger: #ef4444;
+  --danger-glow: rgba(239, 68, 68, 0.5);
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --bg-dark: #0f0c29;
+  --bg-mid: #302b63;
+  --bg-light: #24243e;
+  --glass: rgba(255, 255, 255, 0.07);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --text: #f8fafc;
+  --text-muted: #94a3b8;
+}
+
+.dark {
+  /* Dark mode is default and only mode */
+}
+
+@layer base {
+  body {
+    background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-mid) 50%, var(--bg-light) 100%);
+    background-attachment: fixed;
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+}
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-dark); }
+::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
+
+/* Custom Animations and Styles */
+
+.bg-particles {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 0; overflow: hidden;
+}
+.bg-particles span {
+  position: absolute; display: block; width: 4px; height: 4px;
+  background: var(--primary-light); border-radius: 50%;
+  animation: float-particle 15s infinite linear; opacity: 0.3;
+}
+@keyframes float-particle {
+  0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+  10% { opacity: 0.3; } 90% { opacity: 0.3; }
+  100% { transform: translateY(-10vh) translateX(50px); opacity: 0; }
+}
+
+.nav-logo {
+  background: linear-gradient(90deg, var(--primary-light), var(--accent));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.online-dot { animation: pulse-dot 2s infinite; }
+@keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.2)} }
+
+.section-title {
+  background: linear-gradient(90deg, var(--text), var(--primary-light));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-title span {
+  background: linear-gradient(90deg, var(--primary-light), var(--accent), var(--secondary));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.sos-btn {
+  background: linear-gradient(135deg, var(--danger), #dc2626);
+  box-shadow: 0 0 60px var(--danger-glow); animation: sos-pulse 2s infinite;
+}
+.sos-btn.active { animation: sos-emergency 0.5s infinite; background: linear-gradient(135deg, #ff0000, #b91c1c); }
+@keyframes sos-pulse {
+  0%,100%{box-shadow:0 0 40px var(--danger-glow),0 0 80px rgba(239,68,68,0.2)}
+  50%{box-shadow:0 0 60px var(--danger-glow),0 0 120px rgba(239,68,68,0.3)}
+}
+@keyframes sos-emergency { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.7;transform:scale(1.05)} }
+
+.sos-ring { border: 2px solid var(--danger); animation: ring-expand 2s infinite; }
+.sos-ring:nth-child(2){animation-delay:.5s} .sos-ring:nth-child(3){animation-delay:1s}
+@keyframes ring-expand { 0%{width:180px;height:180px;opacity:.6} 100%{width:320px;height:320px;opacity:0} }
+
+.btn-primary-gradient { background: linear-gradient(135deg, var(--primary), var(--secondary)); }
+.btn-primary-gradient:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(124,58,237,0.4); }
+
+.btn-danger-gradient { background: linear-gradient(135deg, var(--danger), #dc2626); }
+.btn-danger-gradient:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(239,68,68,0.4); }
+
+.meter-fill::after {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  animation: shimmer 2s infinite;
+}
+@keyframes shimmer { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
+
+.ai-status.listening { animation: ai-glow 1.5s infinite; }
+.ai-status.alert { animation: ai-glow 0.5s infinite; }
+@keyframes ai-glow { 0%,100%{box-shadow:0 0 5px currentColor} 50%{box-shadow:0 0 20px currentColor} }
+
+.offline-banner { animation: offline-pulse 2s infinite; }
+@keyframes offline-pulse { 0%,100%{border-color:rgba(239,68,68,0.4)} 50%{border-color:var(--danger)} }
+
+.trigger-card { transition: all 0.3s; position: relative; overflow: hidden; }
+.trigger-card:hover { border-color: var(--primary-light); transform: translateY(-3px); }
+.trigger-card::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(124,58,237,0.1), transparent); transition: left 0.5s; }
+.trigger-card:hover::before { left: 100%; }
+.trigger-active { border-color: var(--danger) !important; animation: trigger-emergency 1s infinite; }
+@keyframes trigger-emergency { 0%,100%{box-shadow:0 0 10px rgba(239,68,68,0.3)} 50%{box-shadow:0 0 30px rgba(239,68,68,0.6)} }
+
+.countdown-number { animation: countdown-beat 1s infinite; }
+@keyframes countdown-beat { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+
+.emergency-popup { animation: popup-shake 0.5s infinite; box-shadow: 0 0 100px rgba(239,68,68,0.5); }
+@keyframes popup-shake { 0%,100%{transform:translate(-50%,-50%) translateX(0)} 25%{transform:translate(-50%,-50%) translateX(-5px)} 75%{transform:translate(-50%,-50%) translateX(5px)} }
+
+.fake-avatar { animation: fake-pulse 2s infinite; }
+@keyframes fake-pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+
+.floating-sos { animation: float-sos 3s infinite ease-in-out; }
+@keyframes float-sos { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+
+.fade-in { opacity: 0; transform: translateY(20px); animation: fadeInUp 0.6s forwards; }
+@keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+.delay-1 { animation-delay: 0.1s; } .delay-2 { animation-delay: 0.2s; } .delay-3 { animation-delay: 0.3s; }

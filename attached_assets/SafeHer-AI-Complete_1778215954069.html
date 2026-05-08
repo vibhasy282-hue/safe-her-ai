@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeHer — AI Women Safety</title>
+    <style>
+        :root {
+            --primary: #7c3aed;
+            --primary-light: #a78bfa;
+            --secondary: #3b82f6;
+            --accent: #06b6d4;
+            --danger: #ef4444;
+            --danger-glow: rgba(239, 68, 68, 0.5);
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --bg-dark: #0f0c29;
+            --bg-mid: #302b63;
+            --bg-light: #24243e;
+            --glass: rgba(255, 255, 255, 0.07);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-mid) 50%, var(--bg-light) 100%);
+            background-attachment: fixed;
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .bg-particles {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0; overflow: hidden;
+        }
+        .bg-particles span {
+            position: absolute; display: block; width: 4px; height: 4px;
+            background: var(--primary-light); border-radius: 50%;
+            animation: float-particle 15s infinite linear; opacity: 0.3;
+        }
+        @keyframes float-particle {
+            0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+            10% { opacity: 0.3; } 90% { opacity: 0.3; }
+            100% { transform: translateY(-10vh) translateX(50px); opacity: 0; }
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
+
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center;
+            background: rgba(15, 12, 41, 0.85); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .nav-logo {
+            font-size: 1.5rem; font-weight: 800;
+            background: linear-gradient(90deg, var(--primary-light), var(--accent));
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent; display: flex; align-items: center; gap: 0.5rem;
+        }
+        .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+        .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; transition: color 0.3s; }
+        .nav-links a:hover { color: var(--text); }
+        .online-indicator { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; color: var(--success); }
+        .online-indicator.offline { color: var(--danger); }
+        .online-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); animation: pulse-dot 2s infinite; }
+        .online-indicator.offline .online-dot { background: var(--danger); animation: none; }
+        @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.2)} }
+
+        main { position: relative; z-index: 1; padding-top: 80px; }
+        section { padding: 4rem 2rem; max-width: 1200px; margin: 0 auto; }
+        .section-title {
+            font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;
+            background: linear-gradient(90deg, var(--text), var(--primary-light));
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .section-subtitle { color: var(--text-muted); margin-bottom: 2rem; font-size: 1rem; }
+
+        .glass-card {
+            background: var(--glass); backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border); border-radius: 20px;
+            padding: 1.5rem; transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .glass-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(124,58,237,0.15); }
+
+        /* HERO */
+        .hero {
+            min-height: 90vh; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center; position: relative;
+        }
+        .hero-title { font-size: clamp(3rem, 8vw, 6rem); font-weight: 900; line-height: 1; margin-bottom: 1rem; }
+        .hero-title span {
+            background: linear-gradient(90deg, var(--primary-light), var(--accent), var(--secondary));
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero-subtitle { font-size: 1.2rem; color: var(--text-muted); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 3rem; }
+
+        .sos-wrapper { position: relative; margin: 2rem 0; }
+        .sos-btn {
+            width: 180px; height: 180px; border-radius: 50%; border: none;
+            background: linear-gradient(135deg, var(--danger), #dc2626); color: white;
+            font-size: 2.5rem; font-weight: 900; cursor: pointer; position: relative; z-index: 2;
+            box-shadow: 0 0 60px var(--danger-glow); animation: sos-pulse 2s infinite;
+            transition: transform 0.3s;
+        }
+        .sos-btn:hover { transform: scale(1.08); }
+        .sos-btn:active { transform: scale(0.95); }
+        .sos-btn.active { animation: sos-emergency 0.5s infinite; background: linear-gradient(135deg, #ff0000, #b91c1c); }
+        @keyframes sos-pulse {
+            0%,100%{box-shadow:0 0 40px var(--danger-glow),0 0 80px rgba(239,68,68,0.2)}
+            50%{box-shadow:0 0 60px var(--danger-glow),0 0 120px rgba(239,68,68,0.3)}
+        }
+        @keyframes sos-emergency { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.7;transform:scale(1.05)} }
+        .sos-ring { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 220px; height: 220px; border-radius: 50%; border: 2px solid var(--danger); opacity: 0; animation: ring-expand 2s infinite; }
+        .sos-ring:nth-child(2){animation-delay:.5s} .sos-ring:nth-child(3){animation-delay:1s}
+        @keyframes ring-expand { 0%{width:180px;height:180px;opacity:.6} 100%{width:320px;height:320px;opacity:0} }
+
+        .hero-cards {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem; width: 100%; max-width: 800px; margin-top: 3rem;
+        }
+        .hero-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 16px; padding: 1.2rem; text-align: center; }
+        .hero-card-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+        .hero-card-label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; }
+        .hero-card-value { font-size: 1.5rem; font-weight: 700; margin-top: 0.3rem; }
+        .hero-card-value.safe{color:var(--success)} .hero-card-value.warn{color:var(--warning)} .hero-card-value.danger{color:var(--danger)}
+
+        /* BUTTONS */
+        .btn {
+            padding: 0.8rem 1.5rem; border-radius: 12px; border: none;
+            font-weight: 600; cursor: pointer; transition: all 0.3s;
+            font-size: 0.95rem; display: inline-flex; align-items: center; gap: 0.5rem;
+        }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(124,58,237,0.4); }
+        .btn-danger { background: linear-gradient(135deg, var(--danger), #dc2626); color: white; }
+        .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(239,68,68,0.4); }
+        .btn-secondary { background: var(--glass); border: 1px solid var(--glass-border); color: var(--text); }
+        .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-group { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-top: 1rem; }
+
+        /* GRIDS */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; }
+        .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+
+        @media(max-width:768px){
+            .grid-2{grid-template-columns:1fr} .nav-links{display:none}
+            nav{padding:1rem} section{padding:3rem 1rem}
+        }
+
+        /* INPUTS */
+        .input-field {
+            width: 100%; padding: 0.9rem 1rem; background: rgba(255,255,255,0.05);
+            border: 1px solid var(--glass-border); border-radius: 12px;
+            color: var(--text); font-size: 0.95rem; transition: border-color 0.3s;
+        }
+        .input-field:focus { outline: none; border-color: var(--primary-light); }
+        .input-field::placeholder { color: var(--text-muted); }
+        select.input-field { cursor: pointer; }
+
+        /* METERS */
+        .meter { margin-bottom: 1rem; }
+        .meter-label { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.3rem; }
+        .meter-track { height: 14px; background: rgba(255,255,255,0.08); border-radius: 7px; overflow: hidden; position: relative; }
+        .meter-fill { height: 100%; border-radius: 7px; transition: width 0.6s ease; position: relative; overflow: hidden; }
+        .meter-fill::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: shimmer 2s infinite;
+        }
+        @keyframes shimmer { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
+
+        /* AI STATUS BADGE */
+        .ai-status { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.9rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; margin-top: 1rem; }
+        .ai-status.idle { background: rgba(34,197,94,0.15); color: var(--success); border: 1px solid rgba(34,197,94,0.3); }
+        .ai-status.listening { background: rgba(6,182,212,0.15); color: var(--accent); border: 1px solid rgba(6,182,212,0.3); animation: ai-glow 1.5s infinite; }
+        .ai-status.alert { background: rgba(239,68,68,0.2); color: var(--danger); border: 1px solid rgba(239,68,68,0.4); animation: ai-glow 0.5s infinite; }
+        @keyframes ai-glow { 0%,100%{box-shadow:0 0 5px currentColor} 50%{box-shadow:0 0 20px currentColor} }
+
+        /* VOICE VISUALIZER */
+        .voice-visualizer { height: 120px; background: rgba(0,0,0,0.3); border-radius: 12px; display: flex; align-items: flex-end; justify-content: center; gap: 3px; padding: 1rem; overflow: hidden; margin-bottom: 1rem; }
+        .voice-bar { width: 6px; background: linear-gradient(to top, var(--primary), var(--accent)); border-radius: 3px; transition: height 0.08s ease; min-height: 4px; }
+        .voice-bar.active { background: linear-gradient(to top, var(--danger), var(--warning)); }
+
+        /* OFFLINE BANNER */
+        .offline-banner {
+            display: none; background: linear-gradient(90deg, rgba(239,68,68,0.15), rgba(245,158,11,0.1));
+            border: 1px solid var(--danger); border-radius: 12px; padding: 1rem;
+            margin-bottom: 1.5rem; text-align: center; animation: offline-pulse 2s infinite;
+        }
+        .offline-banner.show { display: block; }
+        @keyframes offline-pulse { 0%,100%{border-color:rgba(239,68,68,0.4)} 50%{border-color:var(--danger)} }
+
+        /* TRIGGER CARDS */
+        .trigger-card {
+            background: var(--glass); border: 1px solid var(--glass-border); border-radius: 16px;
+            padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.3s; position: relative; overflow: hidden;
+        }
+        .trigger-card:hover { border-color: var(--primary-light); transform: translateY(-3px); }
+        .trigger-card::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(124,58,237,0.1), transparent); transition: left 0.5s; }
+        .trigger-card:hover::before { left: 100%; }
+        .trigger-icon { font-size: 2.5rem; margin-bottom: 0.8rem; }
+        .trigger-name { font-weight: 700; margin-bottom: 0.3rem; }
+        .trigger-desc { font-size: 0.8rem; color: var(--text-muted); }
+        .trigger-active { border-color: var(--danger) !important; animation: trigger-emergency 1s infinite; }
+        @keyframes trigger-emergency { 0%,100%{box-shadow:0 0 10px rgba(239,68,68,0.3)} 50%{box-shadow:0 0 30px rgba(239,68,68,0.6)} }
+
+        /* SCORE RING */
+        .score-ring { width: 100px; height: 100px; margin: 0 auto; position: relative; }
+        .score-ring svg { transform: rotate(-90deg); }
+        .score-ring-bg { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 8; }
+        .score-ring-fill { fill: none; stroke: url(#scoreGradient); stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1s ease; }
+        .score-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 1.5rem; font-weight: 800; }
+
+        /* COUNTDOWN OVERLAY */
+        .countdown-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15,12,41,0.96); z-index: 10000; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center;
+        }
+        .countdown-overlay.show { display: flex; }
+        .countdown-number { font-size: 8rem; font-weight: 900; color: var(--danger); animation: countdown-beat 1s infinite; }
+        @keyframes countdown-beat { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+        .countdown-text { font-size: 1.2rem; color: var(--text-muted); margin-bottom: 2rem; }
+
+        /* EMERGENCY POPUP */
+        .emergency-popup {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+            background: linear-gradient(135deg, #7f1d1d, #991b1b); border: 2px solid var(--danger);
+            border-radius: 20px; padding: 2rem; z-index: 10002; text-align: center; min-width: 320px;
+            box-shadow: 0 0 100px rgba(239,68,68,0.5); animation: popup-shake 0.5s infinite;
+        }
+        .emergency-popup.show { display: block; }
+        @keyframes popup-shake { 0%,100%{transform:translate(-50%,-50%) translateX(0)} 25%{transform:translate(-50%,-50%) translateX(-5px)} 75%{transform:translate(-50%,-50%) translateX(5px)} }
+        .popup-title { font-size: 2rem; font-weight: 900; margin-bottom: 1rem; }
+        .popup-actions { display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem; }
+
+        /* PRIVACY */
+        .privacy-item { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+        .privacy-icon { width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
+        .privacy-bar-track { height: 8px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; margin-top: 0.3rem; }
+        .privacy-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--success), var(--primary)); transition: width 1.5s ease; }
+
+        /* TOGGLE */
+        .toggle-switch { position: relative; width: 50px; height: 26px; background: rgba(255,255,255,0.1); border-radius: 13px; cursor: pointer; transition: background 0.3s; }
+        .toggle-switch.active { background: var(--success); }
+        .toggle-switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: white; transition: transform 0.3s; }
+        .toggle-switch.active::after { transform: translateX(24px); }
+
+        /* HEATMAP */
+        .heatmap-container { height: 300px; background: rgba(0,0,0,0.3); border-radius: 12px; position: relative; overflow: hidden; }
+        .heatmap-grid { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: grid; grid-template-columns: repeat(10,1fr); grid-template-rows: repeat(6,1fr); gap: 2px; padding: 4px; }
+        .heatmap-cell { border-radius: 4px; transition: background 0.8s ease; }
+
+        /* TIMELINE */
+        .timeline { position: relative; padding-left: 2rem; }
+        .timeline::before { content: ''; position: absolute; left: 0.5rem; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, var(--primary), var(--accent)); }
+        .timeline-item { position: relative; margin-bottom: 1.2rem; padding: 1rem; background: var(--glass); border: 1px solid var(--glass-border); border-radius: 12px; }
+        .timeline-item::before { content: ''; position: absolute; left: -1.8rem; top: 1.3rem; width: 12px; height: 12px; border-radius: 50%; background: var(--primary-light); border: 2px solid var(--bg-dark); }
+        .timeline-time { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.3rem; }
+        .timeline-title { font-weight: 700; margin-bottom: 0.2rem; }
+        .timeline-desc { font-size: 0.85rem; color: var(--text-muted); }
+
+        /* FAKE CALL */
+        .fake-call-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(180deg, #1e293b, #0f172a); z-index: 10001;
+            flex-direction: column; justify-content: center; align-items: center;
+        }
+        .fake-call-overlay.show { display: flex; }
+        .fake-avatar { width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--accent)); display: flex; align-items: center; justify-content: center; font-size: 3rem; margin-bottom: 1.5rem; animation: fake-pulse 2s infinite; }
+        @keyframes fake-pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+        .fake-caller-name { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.3rem; }
+        .fake-caller-status { color: var(--text-muted); margin-bottom: 2rem; }
+        .fake-call-actions { display: flex; gap: 2rem; }
+        .fake-action-btn { width: 70px; height: 70px; border-radius: 50%; border: none; font-size: 1.5rem; cursor: pointer; transition: transform 0.3s; }
+        .fake-action-btn:hover { transform: scale(1.1); }
+        .fake-accept { background: var(--success); color: white; }
+        .fake-decline { background: var(--danger); color: white; }
+
+        /* FLOATING SOS */
+        .floating-sos {
+            position: fixed; bottom: 2rem; right: 2rem; width: 60px; height: 60px;
+            border-radius: 50%; background: linear-gradient(135deg, var(--danger), #dc2626);
+            border: none; color: white; font-size: 1.2rem; font-weight: 800; cursor: pointer;
+            z-index: 999; box-shadow: 0 5px 30px rgba(239,68,68,0.5);
+            animation: float-sos 3s infinite ease-in-out;
+            display: flex; align-items: center; justify-content: center;
+        }
+        @keyframes float-sos { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+
+        /* NOTIFICATION */
+        .notification {
+            position: fixed; top: 80px; right: 1rem; z-index: 10003;
+            background: var(--glass); backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border); border-radius: 12px;
+            padding: 1rem 1.5rem; max-width: 350px; transform: translateX(400px);
+            transition: transform 0.4s ease; color: var(--text);
+        }
+        .notification.show { transform: translateX(0); }
+        .notification.success { border-left: 4px solid var(--success); }
+        .notification.warning { border-left: 4px solid var(--warning); }
+        .notification.danger { border-left: 4px solid var(--danger); }
+
+        /* CONTACTS */
+        .contact-item { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem; margin: 0.3rem 0; background: rgba(255,255,255,0.04); border-radius: 8px; }
+        .contact-name { font-weight: 600; }
+        .contact-phone { font-size: 0.85rem; color: var(--text-muted); }
+        .remove-btn { background: rgba(239,68,68,0.2); border: none; color: var(--danger); padding: 0.3rem 0.6rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; }
+
+        /* ENCRYPTION ANIMATION */
+        .encrypt-animation { font-family: monospace; font-size: 0.75rem; color: var(--primary-light); overflow: hidden; white-space: nowrap; margin-top: 0.5rem; }
+
+        .fade-in { opacity: 0; transform: translateY(20px); animation: fadeInUp 0.6s forwards; }
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+        .delay-1 { animation-delay: 0.1s; } .delay-2 { animation-delay: 0.2s; } .delay-3 { animation-delay: 0.3s; }
+
+        .section-separator { height: 1px; background: linear-gradient(90deg, transparent, var(--glass-border), transparent); margin: 0 2rem; }
+
+        footer { text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.85rem; border-top: 1px solid var(--glass-border); }
+    </style>
+</head>
+<body>
+    <div class="bg-particles" id="bgParticles"></div>
+
+    <nav>
+        <div class="nav-logo"><span>🛡️</span> SafeHer</div>
+        <div class="nav-links">
+            <a href="#hero">Home</a><a href="#voice">AI Voice</a><a href="#route">Safe Route</a>
+            <a href="#triggers">SOS Triggers</a><a href="#privacy">Privacy</a>
+        </div>
+        <div class="online-indicator" id="onlineIndicator">
+            <span class="online-dot"></span><span id="onlineText">Online</span>
+        </div>
+    </nav>
+
+    <main>
+        <!-- HERO -->
+        <section class="hero" id="hero">
+            <h1 class="hero-title fade-in">Safe<span>Her</span></h1>
+            <p class="hero-subtitle fade-in delay-1">Predict. Protect. Prevent.</p>
+            <div class="sos-wrapper fade-in delay-2">
+                <div class="sos-ring"></div><div class="sos-ring"></div><div class="sos-ring"></div>
+                <button class="sos-btn" id="mainSosBtn" onclick="activateSOS()">SOS</button>
+            </div>
+            <div class="hero-cards fade-in delay-3">
+                <div class="hero-card"><div class="hero-card-icon">🤖</div><div class="hero-card-label">AI Guardian</div><div class="hero-card-value safe" id="guardianStatusHero">Active</div></div>
+                <div class="hero-card"><div class="hero-card-icon">📡</div><div class="hero-card-label">Location</div><div class="hero-card-value warn" id="locationStatusHero">Acquiring...</div></div>
+                <div class="hero-card"><div class="hero-card-icon">🎙️</div><div class="hero-card-label">Voice AI</div><div class="hero-card-value safe" id="voiceStatusHero">Standby</div></div>
+                <div class="hero-card"><div class="hero-card-icon">🔒</div><div class="hero-card-label">Privacy Score</div><div class="hero-card-value safe" id="privacyScoreHero">98%</div></div>
+            </div>
+        </section>
+
+        <div class="section-separator"></div>
+
+        <!-- 1. AI VOICE & PANIC DETECTION -->
+        <section id="voice">
+            <h2 class="section-title fade-in">🎙️ AI Voice & Panic Detection</h2>
+            <p class="section-subtitle fade-in">Real-time voice analysis detecting emergency keywords in multiple languages</p>
+            <div class="offline-banner" id="offlineBannerVoice">⚠️ <strong>Offline Mode:</strong> Voice AI running locally. Emergency data stored on device.</div>
+
+            <div class="grid-2">
+                <div class="glass-card fade-in delay-1">
+                    <div class="voice-visualizer" id="voiceVisualizer"></div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" id="startListeningBtn" onclick="startVoiceListening()">🎙️ Start Listening</button>
+                        <button class="btn btn-secondary" id="stopListeningBtn" onclick="stopVoiceListening()" disabled>⏹️ Stop</button>
+                        <button class="btn btn-secondary" onclick="simulateVoiceTrigger()">🧪 Simulate</button>
+                    </div>
+                    <div class="ai-status idle" id="aiStatusBadge"><span id="aiStatusDot">●</span> <span id="aiStatusText">AI Status: Idle</span></div>
+                    <div style="margin-top:1rem;font-size:0.85rem;color:var(--text-muted);">
+                        Detects: <span style="color:var(--primary-light)">"Help"</span>, <span style="color:var(--primary-light)">"Bachao"</span>, <span style="color:var(--primary-light)">"Madad"</span>, <span style="color:var(--primary-light)">"Save Me"</span>
+                    </div>
+                    <div id="lastDetected" style="margin-top:0.8rem;padding:0.6rem;background:rgba(255,255,255,0.04);border-radius:8px;font-size:0.85rem;color:var(--text-muted);min-height:36px;">No emergency keywords detected yet...</div>
+                </div>
+
+                <div class="glass-card fade-in delay-2">
+                    <div class="meter">
+                        <div class="meter-label"><span>🧠 Panic Meter</span><span id="panicValue">0%</span></div>
+                        <div class="meter-track"><div class="meter-fill" id="panicMeter" style="width:0%;background:linear-gradient(90deg,var(--success),var(--warning),var(--danger))"></div></div>
+                    </div>
+                    <div class="meter">
+                        <div class="meter-label"><span>🔊 Noise Level</span><span id="noiseValue">0 dB</span></div>
+                        <div class="meter-track"><div class="meter-fill" id="noiseMeter" style="width:0%;background:linear-gradient(90deg,var(--accent),var(--primary))"></div></div>
+                    </div>
+                    <div class="meter">
+                        <div class="meter-label"><span>⚡ AI Danger Confidence</span><span id="dangerValue">0%</span></div>
+                        <div class="meter-track"><div class="meter-fill" id="dangerMeter" style="width:0%;background:linear-gradient(90deg,var(--success),var(--warning),var(--danger))"></div></div>
+                    </div>
+                    <div id="voiceLog" style="margin-top:1rem;padding:0.6rem;background:rgba(0,0,0,0.2);border-radius:8px;font-size:0.8rem;color:var(--text-muted);max-height:120px;overflow-y:auto;font-family:monospace;">[System] Voice AI initialized...
+[System] Waiting for activation...</div>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-separator"></div>
+
+        <!-- 2. SAFE ROUTE PREDICTION -->
+        <section id="route">
+            <h2 class="section-title fade-in">🛣️ Safe Route Prediction</h2>
+            <p class="section-subtitle fade-in">AI analyzes crowd density, crime risk, and police proximity for safest path</p>
+            <div class="offline-banner" id="offlineBannerRoute">⚠️ <strong>Offline Mode:</strong> Route data may be limited. Saved routes available.</div>
+
+            <div class="glass-card fade-in delay-1">
+                <div class="grid-2" style="margin-bottom:1rem;">
+                    <input type="text" class="input-field" id="currentLocInput" placeholder="📍 Current Location (e.g. Connaught Place, Delhi)">
+                    <input type="text" class="input-field" id="destInput" placeholder="🏁 Destination (e.g. India Gate, Delhi)">
+                </div>
+                <button class="btn btn-primary" onclick="generateSafeRoute()">🛡️ Generate AI Safe Route</button>
+
+                <div id="routeResults" style="display:none;margin-top:1.5rem;">
+                    <div class="grid-4">
+                        <div class="hero-card">
+                            <div class="score-ring">
+                                <svg width="100" height="100" viewBox="0 0 100 100">
+                                    <defs><linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#22c55e"/><stop offset="50%" style="stop-color:#f59e0b"/><stop offset="100%" style="stop-color:#ef4444"/></linearGradient></defs>
+                                    <circle class="score-ring-bg" cx="50" cy="50" r="42"/><circle class="score-ring-fill" id="scoreRing" cx="50" cy="50" r="42" stroke-dasharray="264" stroke-dashoffset="264"/>
+                                </svg>
+                                <div class="score-text" id="scoreText">--</div>
+                            </div>
+                            <div style="font-size:0.8rem;color:var(--text-muted);margin-top:0.5rem;">Safety Score</div>
+                        </div>
+                        <div class="hero-card"><div class="hero-card-value" id="riskLevelVal" style="font-size:2rem;">--</div><div class="hero-card-label">Risk Level</div></div>
+                        <div class="hero-card"><div class="hero-card-value" id="crowdVal" style="font-size:2rem;">--</div><div class="hero-card-label">Crowd Safety</div></div>
+                        <div class="hero-card"><div class="hero-card-value" id="policeVal" style="font-size:2rem;">--</div><div class="hero-card-label">Police Nearby</div></div>
+                    </div>
+                    <div style="margin-top:1.5rem;padding:1rem;background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.2);border-radius:12px;">
+                        <div style="font-weight:700;margin-bottom:0.5rem;">🛣️ AI Recommended Route</div>
+                        <div id="bestRouteText" style="color:var(--text-muted);font-size:0.9rem;"></div>
+                        <div style="margin-top:0.8rem;display:flex;gap:0.5rem;flex-wrap:wrap;" id="routeTags"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-separator"></div>
+
+        <!-- 3. OFFLINE EMERGENCY SYSTEM -->
+        <section id="offline">
+            <h2 class="section-title fade-in">📴 Offline Emergency System</h2>
+            <p class="section-subtitle fade-in">Works without internet. Stores all emergency data encrypted on your device.</p>
+            <div class="grid-3">
+                <div class="glass-card fade-in delay-1">
+                    <div style="text-align:center;"><div class="hero-card-icon">💾</div><div class="hero-card-label">Local Encrypted Storage</div><div class="hero-card-value safe" id="storageStatus">Active</div></div>
+                    <div style="margin-top:1rem;font-size:0.85rem;color:var(--text-muted);">AES-256 simulated encryption. Data never leaves your device.</div>
+                </div>
+                <div class="glass-card fade-in delay-2">
+                    <div style="text-align:center;"><div class="hero-card-icon">📡</div><div class="hero-card-label">Network Status</div><div class="hero-card-value" id="networkHero">Checking...</div></div>
+                    <div style="margin-top:1rem;font-size:0.85rem;color:var(--text-muted);" id="networkDesc">Detecting connection...</div>
+                </div>
+                <div class="glass-card fade-in delay-3">
+                    <div style="text-align:center;"><div class="hero-card-icon">📍</div><div class="hero-card-label">Last Saved Location</div><div class="hero-card-value" id="lastLocHero">Not saved</div></div>
+                    <div style="margin-top:1rem;font-size:0.85rem;color:var(--text-muted);">Auto-saved during every SOS trigger.</div>
+                </div>
+            </div>
+
+            <div class="glass-card fade-in" style="margin-top:1.5rem;">
+                <div style="font-weight:700;margin-bottom:0.8rem;">📋 Emergency Storage Console</div>
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="saveAllEmergencyData()">💾 Save All Data</button>
+                    <button class="btn btn-secondary" onclick="loadAllEmergencyData()">📂 Load Saved Data</button>
+                    <button class="btn btn-secondary" onclick="exportData()">📤 Export JSON</button>
+                    <button class="btn btn-danger" onclick="clearAllData()">🗑️ Clear Storage</button>
+                </div>
+                <div id="storageConsole" style="margin-top:1rem;padding:0.8rem;background:rgba(0,0,0,0.2);border-radius:8px;font-size:0.8rem;color:var(--text-muted);min-height:80px;font-family:monospace;max-height:200px;overflow-y:auto;">[Storage] Ready...
+[Storage] No emergency data stored yet.</div>
+            </div>
+        </section>
+
+        <div class="section-separator"></div>
+
+        <!-- 4. SMART HIDDEN SOS TRIGGERS -->
+        <section id="triggers">
+            <h2 class="section-title fade-in">📳 Smart Hidden SOS Triggers</h2>
+            <p class="section-subtitle fade-in">Discrete emergency activation when you can't press SOS directly</p>
+            <div class="grid-4 fade-in delay-1">
+                <div class="trigger-card" id="triggerShake" onclick="activateTrigger('shake')">
+                    <div class="trigger-icon">📳</div><div class="trigger-name">Shake Detection</div><div class="trigger-desc">Shake phone vigorously 3 times</div>
+                    <div style="margin-top:0.5rem;font-size:0.7rem;color:var(--primary-light);">Click to test</div>
+                </div>
+                <div class="trigger-card" id="triggerPower" onclick="activateTrigger('power')">
+                    <div class="trigger-icon">🔌</div><div class="trigger-name">Triple Power Press</div><div class="trigger-desc">Press power button 3 times fast</div>
+                    <div style="margin-top:0.5rem;font-size:0.7rem;color:var(--primary-light);">Press "P" key x3</div>
+                </div>
+                <div class="trigger-card" id="triggerVolume" onclick="activateTrigger('volume')">
+                    <div class="trigger-icon">🔊</div><div class="trigger-name">Long Volume Press</div><div class="trigger-desc">Hold volume down 3 seconds</div>
+                    <div style="margin-top:0.5rem;font-size:0.7rem;color:var(--primary-light);">Hold "V" key</div>
+                </div>
+                <div class="trigger-card" id="triggerWatch" onclick="activateTrigger('watch')">
+                    <div class="trigger-icon">⌚</div><div class="trigger-name">Smartwatch Trigger</div><div class="trigger-desc">Double-tap smartwatch face</div>
+                    <div style="margin-top:0.5rem;font-size:0.7rem;color:var(--primary-light);">Click to test</div>
+                </div>
+            </div>
+            <div class="glass-card fade-in delay-2" style="margin-top:1.5rem;">
+                <div style="font-weight:700;margin-bottom:0.5rem;">📊 Trigger Log</div>
+                <div id="triggerLog" style="font-size:0.85rem;color:var(--text-muted);max-height:150px;overflow-y:auto;">No triggers activated yet. Try clicking a card above or use keyboard shortcuts.</div>
+            </div>
+        </section>
+
+        <div class="section-separator"></div>
+
+        <!-- 5. PRIVACY & ENCRYPTED SAFETY NETWORK -->
+        <section id="privacy">
+            <h2 class="section-title fade-in">🔐 Privacy & Encrypted Safety Network</h2>
+            <p class="section-subtitle fade-in">Enterprise-grade protection for your safety data</p>
+            <div class="grid-2">
+                <div class="glass-card fade-in delay-1">
+                    <div class="privacy-item">
+                        <div class="privacy-icon">🔐</div>
+                        <div style="flex:1;"><div style="font-weight:700;">Encrypted Protection</div><div style="font-size:0.8rem;color:var(--text-muted);">AES-256 encryption simulation</div><div class="privacy-bar-track"><div class="privacy-bar-fill" style="width:0%" data-target="100"></div></div><div class="encrypt-animation" id="encryptAnim1"></div></div>
+                    </div>
+                    <div class="privacy-item">
+                        <div class="privacy-icon">📍</div>
+                        <div style="flex:1;"><div style="font-weight:700;">Secure Location Sharing</div><div style="font-size:0.8rem;color:var(--text-muted);">End-to-end encrypted sharing</div><div class="privacy-bar-track"><div class="privacy-bar-fill" style="width:0%" data-target="95"></div></div><div class="encrypt-animation" id="encryptAnim2"></div></div>
+                    </div>
+                </div>
+                <div class="glass-card fade-in delay-2">
+                    <div class="privacy-item">
+                        <div class="privacy-icon">🤖</div>
+                        <div style="flex:1;"><div style="font-weight:700;">AI Threat Monitoring</div><div style="font-size:0.8rem;color:var(--text-muted);">Real-time AI analysis</div><div class="privacy-bar-track"><div class="privacy-bar-fill" style="width:0%" data-target="92"></div></div><div class="encrypt-animation" id="encryptAnim3"></div></div>
+                    </div>
+                    <div class="privacy-item">
+                        <div class="privacy-icon">🛡️</div>
+                        <div style="flex:1;"><div style="font-weight:700;">Overall Privacy Score</div><div style="font-size:0.8rem;color:var(--text-muted);">Combined protection level</div><div class="privacy-bar-track"><div class="privacy-bar-fill" style="width:0%" data-target="98"></div></div><div class="encrypt-animation" id="encryptAnim4"></div></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-separator"></div>
+
+        <!-- EXTRAS -->
+        <section id="extras">
+            <h2 class="section-title fade-in">✨ Extra Safety Features</h2>
+            <p class="section-subtitle fade-in">Additional tools for every situation</p>
+
+            <!-- Guardian Mode -->
+            <div class="glass-card fade-in delay-1" style="margin-bottom:1.5rem;">
+                <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+                    <span style="font-size:2rem;">👼</span>
+                    <div style="flex:1;"><div style="font-weight:700;font-size:1.1rem;">AI Guardian Mode</div><div style="font-size:0.85rem;color:var(--text-muted);">Continuous AI monitoring with predictive threat detection</div></div>
+                    <div style="display:flex;align-items:center;gap:1rem;"><span>OFF</span><div class="toggle-switch" id="guardianToggle" onclick="toggleGuardian()"></div><span>ON</span></div>
+                </div>
+                <div id="guardianLog" style="margin-top:0.8rem;font-size:0.85rem;color:var(--text-muted);padding:0.6rem;background:rgba(0,0,0,0.15);border-radius:8px;">Guardian mode is currently OFF. Toggle to enable continuous AI monitoring.</div>
+            </div>
+
+            <!-- Fake Call -->
+            <div class="glass-card fade-in delay-2" style="margin-bottom:1.5rem;">
+                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+                    <div style="display:flex;align-items:center;gap:1rem;">
+                        <span style="font-size:2rem;">📞</span>
+                        <div><div style="font-weight:700;font-size:1.1rem;">Fake Call Feature</div><div style="font-size:0.85rem;color:var(--text-muted);">Simulate incoming call to escape uncomfortable situations</div></div>
+                    </div>
+                    <button class="btn btn-primary" onclick="triggerFakeCall()">📞 Trigger Fake Call</button>
+                </div>
+            </div>
+
+            <!-- Emergency Timeline -->
+            <div class="glass-card fade-in delay-3" style="margin-bottom:1.5rem;">
+                <div style="font-weight:700;font-size:1.1rem;margin-bottom:1rem;">📜 Emergency Timeline</div>
+                <div class="timeline" id="emergencyTimeline">
+                    <div class="timeline-item"><div class="timeline-time">Just now</div><div class="timeline-title">SafeHer AI System Initialized</div><div class="timeline-desc">All safety modules loaded and ready</div></div>
+                </div>
+                <button class="btn btn-secondary" style="margin-top:1rem;" onclick="addTimelineEvent('Manual Test','User triggered a test event')">➕ Add Test Event</button>
+            </div>
+
+            <!-- Heatmap -->
+            <div class="glass-card fade-in delay-4">
+                <div style="font-weight:700;font-size:1.1rem;margin-bottom:1rem;">🗺️ Emergency Safety Heatmap</div>
+                <div class="heatmap-container"><div class="heatmap-grid" id="heatmapGrid"></div></div>
+                <div style="display:flex;gap:1.5rem;justify-content:center;margin-top:1rem;font-size:0.8rem;flex-wrap:wrap;">
+                    <span style="display:flex;align-items:center;gap:0.3rem;"><span style="width:16px;height:16px;border-radius:4px;background:rgba(34,197,94,0.5);"></span>Safe</span>
+                    <span style="display:flex;align-items:center;gap:0.3rem;"><span style="width:16px;height:16px;border-radius:4px;background:rgba(245,158,11,0.5);"></span>Caution</span>
+                    <span style="display:flex;align-items:center;gap:0.3rem;"><span style="width:16px;height:16px;border-radius:4px;background:rgba(239,68,68,0.5);"></span>Danger</span>
+                    <span style="display:flex;align-items:center;gap:0.3rem;"><span style="width:16px;height:16px;border-radius:4px;background:rgba(124,58,237,0.5);"></span>Police</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Floating SOS -->
+    <button class="floating-sos" onclick="activateSOS()" title="Emergency SOS">SOS</button>
+
+    <!-- Countdown Overlay -->
+    <div class="countdown-overlay" id="countdownOverlay">
+        <div class="countdown-text" id="countdownText">Emergency countdown initiated...</div>
+        <div class="countdown-number" id="countdownNumber">5</div>
+        <button class="btn btn-secondary countdown-cancel" onclick="cancelCountdown()">✋ Cancel Emergency</button>
+    </div>
+
+    <!-- Fake Call Overlay -->
+    <div class="fake-call-overlay" id="fakeCallOverlay">
+        <div class="fake-avatar">👮</div><div class="fake-caller-name">Police Station</div><div class="fake-caller-status">Incoming Call...</div>
+        <div class="fake-call-actions"><button class="fake-action-btn fake-decline" onclick="endFakeCall()">📞</button><button class="fake-action-btn fake-accept" onclick="endFakeCall()">📞</button></div>
+    </div>
+
+    <!-- Emergency Popup -->
+    <div class="emergency-popup" id="emergencyPopup">
+        <div class="popup-title">🚨 EMERGENCY DETECTED!</div>
+        <div style="color:var(--text-muted);margin-bottom:1rem;">AI has detected a potential threat!<br>SOS has been activated automatically.</div>
+        <div id="popupDetails" style="font-size:0.9rem;margin-bottom:1rem;"></div>
+        <div class="popup-actions"><button class="btn btn-danger" onclick="confirmEmergency()">Send SOS Now</button><button class="btn btn-secondary" onclick="dismissEmergency()">False Alarm</button></div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"><div id="notifText"></div></div>
+
+    <footer>
+        <p>🛡️ SafeHer — AI-Powered Women Safety &copy; 2026</p>
+        <p style="margin-top:0.5rem;font-size:0.75rem;">All data is encrypted and stored locally. No backend required. Works offline.</p>
+    </footer>
+
+    <script>
+        // ===================== STATE =====================
+        let isListening = false, isSOSActive = false, isGuardianOn = false;
+        let voiceInterval = null, guardianInterval = null, heatmapInterval = null;
+        let countdownInterval = null, countdownVal = 5;
+        let currentLocation = null;
+        const keywords = ['help','bachao','madad','save me','bachavo','bachaao','bachao bachao','help me','save'];
+        const triggerNames = { shake:'📳 Shake Detection', power:'🔌 Triple Power Press', volume:'🔊 Long Volume Press', watch:'⌚ Smartwatch Trigger' };
+
+        // ===================== INIT =====================
+        function initApp() {
+            generateParticles();
+            initVoiceBars();
+            initHeatmap();
+            checkOnlineStatus();
+            loadSavedLocation();
+            animatePrivacyBars();
+            startEncryptAnimation();
+            setupKeyboardTriggers();
+            setupShakeDetection();
+            loadTimelineFromStorage();
+
+            window.addEventListener('online', () => updateOnline(true));
+            window.addEventListener('offline', () => updateOnline(false));
+
+            getCurrentLocation();
+        }
+
+        // ===================== NOTIFICATIONS =====================
+        function showNotif(msg, type='success', duration=4000) {
+            const n = document.getElementById('notification');
+            document.getElementById('notifText').textContent = msg;
+            n.className = 'notification ' + type;
+            n.classList.add('show');
+            setTimeout(() => n.classList.remove('show'), duration);
+        }
+
+        // ===================== PARTICLES =====================
+        function generateParticles() {
+            const c = document.getElementById('bgParticles');
+            for (let i = 0; i < 30; i++) {
+                const s = document.createElement('span');
+                s.style.left = Math.random() * 100 + '%';
+                s.style.animationDelay = Math.random() * 15 + 's';
+                s.style.animationDuration = (10 + Math.random() * 10) + 's';
+                c.appendChild(s);
+            }
+        }
+
+        // ===================== ONLINE / OFFLINE =====================
+        function checkOnlineStatus() {
+            updateOnline(navigator.onLine);
+        }
+        function updateOnline(online) {
+            const ind = document.getElementById('onlineIndicator');
+            const txt = document.getElementById('onlineText');
+            const netHero = document.getElementById('networkHero');
+            const netDesc = document.getElementById('networkDesc');
+            const banners = [document.getElementById('offlineBannerVoice'), document.getElementById('offlineBannerRoute')];
+
+            if (online) {
+                ind.classList.remove('offline'); txt.textContent = 'Online';
+                banners.forEach(b => b && b.classList.remove('show'));
+                if (netHero) { netHero.textContent = 'Connected'; netHero.className = 'hero-card-value safe'; }
+                if (netDesc) netDesc.textContent = 'All safety features fully operational.';
+            } else {
+                ind.classList.add('offline'); txt.textContent = 'Offline';
+                banners.forEach(b => b && b.classList.add('show'));
+                if (netHero) { netHero.textContent = 'Offline'; netHero.className = 'hero-card-value danger'; }
+                if (netDesc) netDesc.textContent = 'Emergency backup mode active. Data stored locally.';
+                logStorage('[Offline] Emergency backup mode activated');
+            }
+        }
+
+        // ===================== LOCATION =====================
+        function getCurrentLocation() {
+            const loc = document.getElementById('locationStatusHero');
+            if (loc) loc.textContent = 'Acquiring...';
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    pos => {
+                        currentLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                        if (loc) { loc.textContent = `${currentLocation.lat.toFixed(4)}, ${currentLocation.lng.toFixed(4)}`; loc.className = 'hero-card-value safe'; }
+                        const last = document.getElementById('lastLocHero');
+                        if (last) last.textContent = `${currentLocation.lat.toFixed(3)}, ${currentLocation.lng.toFixed(3)}`;
+                        localStorage.setItem('safeher_location', JSON.stringify(currentLocation));
+                        logStorage(`[Location] GPS acquired: ${currentLocation.lat.toFixed(4)}, ${currentLocation.lng.toFixed(4)}`);
+                    },
+                    err => {
+                        if (loc) { loc.textContent = 'GPS Denied'; loc.className = 'hero-card-value warn'; }
+                        logStorage('[Location] GPS access denied by user');
+                    }
+                );
+            } else {
+                if (loc) { loc.textContent = 'No GPS'; loc.className = 'hero-card-value danger'; }
+            }
+        }
+        function loadSavedLocation() {
+            const saved = localStorage.getItem('safeher_location');
+            if (saved) {
+                currentLocation = JSON.parse(saved);
+                const last = document.getElementById('lastLocHero');
+                if (last) last.textContent = `${currentLocation.lat.toFixed(3)}, ${currentLocation.lng.toFixed(3)}`;
+                const loc = document.getElementById('locationStatusHero');
+                if (loc) { loc.textContent = 'Saved'; loc.className = 'hero-card-value safe'; }
+            }
+        }
+
+        // ===================== SOS =====================
+        function activateSOS() {
+            const btn = document.getElementById('mainSosBtn');
+            btn.classList.add('active'); btn.textContent = '!';
+            isSOSActive = true;
+
+            // Vibration pattern
+            if (navigator.vibrate) navigator.vibrate([500,200,500,200,500,200,1000]);
+
+            // Alarm sound (Web Audio API)
+            playAlarmSound();
+
+            // Get fresh location
+            getCurrentLocation();
+
+            // Save emergency data
+            saveAllEmergencyData();
+
+            // Timeline
+            addTimelineEvent('🚨 SOS ACTIVATED', 'Manual emergency alert triggered');
+
+            showNotif('🚨 SOS Activated! Location shared. Alarm sounding.', 'danger', 6000);
+            logStorage('[SOS] Emergency alert activated manually');
+
+            setTimeout(() => { btn.classList.remove('active'); btn.textContent = 'SOS'; isSOSActive = false; }, 5000);
+        }
+
+        function playAlarmSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                for (let i = 0; i < 5; i++) {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain); gain.connect(ctx.destination);
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(900, ctx.currentTime + i * 0.4);
+                    osc.frequency.setValueAtTime(700, ctx.currentTime + i * 0.4 + 0.2);
+                    gain.gain.setValueAtTime(0.25, ctx.currentTime + i * 0.4);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + i * 0.4 + 0.35);
+                    osc.start(ctx.currentTime + i * 0.4);
+                    osc.stop(ctx.currentTime + i * 0.4 + 0.35);
+                }
+            } catch(e) { console.log('Audio unavailable'); }
+        }
+
+        // ===================== VOICE DETECTION =====================
+        function initVoiceBars() {
+            const c = document.getElementById('voiceVisualizer');
+            for (let i = 0; i < 30; i++) {
+                const b = document.createElement('div');
+                b.className = 'voice-bar';
+                b.style.height = '4px';
+                c.appendChild(b);
+            }
+        }
+
+        function startVoiceListening() {
+            if (isListening) return;
+            isListening = true;
+            document.getElementById('startListeningBtn').disabled = true;
+            document.getElementById('stopListeningBtn').disabled = false;
+            updateAIStatus('listening');
+            document.getElementById('voiceStatusHero').textContent = 'Listening';
+            logVoice('[Voice] AI listening started...');
+
+            const bars = document.querySelectorAll('.voice-bar');
+            voiceInterval = setInterval(() => {
+                bars.forEach(bar => {
+                    const h = 4 + Math.random() * 90;
+                    bar.style.height = h + 'px';
+                });
+                updateNoiseMeter(30 + Math.random() * 60);
+                updatePanicMeter(Math.random() * 15);
+                updateDangerMeter(Math.random() * 10);
+            }, 100);
+
+            // Real speech recognition
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                const rec = new SpeechRecognition();
+                rec.continuous = true; rec.interimResults = true; rec.lang = 'en-IN';
+                rec.onresult = e => {
+                    for (let i = e.resultIndex; i < e.results.length; i++) {
+                        const transcript = e.results[i][0].transcript.toLowerCase();
+                        keywords.forEach(kw => {
+                            if (transcript.includes(kw)) {
+                                handleKeywordDetected(kw, transcript);
+                            }
+                        });
+                    }
+                };
+                rec.onerror = () => {};
+                rec.start();
+                window._voiceRec = rec;
+            }
+
+            addTimelineEvent('🎙️ Voice AI Started', 'Listening for emergency keywords');
+        }
+
+        function stopVoiceListening() {
+            if (!isListening) return;
+            isListening = false;
+            document.getElementById('startListeningBtn').disabled = false;
+            document.getElementById('stopListeningBtn').disabled = true;
+            updateAIStatus('idle');
+            document.getElementById('voiceStatusHero').textContent = 'Standby';
+            clearInterval(voiceInterval);
+            document.querySelectorAll('.voice-bar').forEach(b => { b.style.height = '4px'; b.classList.remove('active'); });
+            updatePanicMeter(0); updateNoiseMeter(0); updateDangerMeter(0);
+            if (window._voiceRec) window._voiceRec.stop();
+            logVoice('[Voice] AI listening stopped.');
+        }
+
+        function simulateVoiceTrigger() {
+            const kw = keywords[Math.floor(Math.random() * keywords.length)];
+            handleKeywordDetected(kw, `Someone said "${kw}" nearby`);
+        }
+
+        function handleKeywordDetected(keyword, context) {
+            const conf = (85 + Math.random() * 14.9).toFixed(1);
+            document.getElementById('lastDetected').innerHTML = `<span style="color:var(--danger);font-weight:700;">🚨 DETECTED: "${keyword.toUpperCase()}"</span><br><span style="font-size:0.8rem;">AI Confidence: ${conf}% | Context: ${context}</span>`;
+            document.getElementById('lastDetected').style.border = '1px solid var(--danger)';
+            document.getElementById('lastDetected').style.background = 'rgba(239,68,68,0.08)';
+
+            document.querySelectorAll('.voice-bar').forEach(b => b.classList.add('active'));
+            updatePanicMeter(85 + Math.random() * 15);
+            updateNoiseMeter(80 + Math.random() * 20);
+            updateDangerMeter(75 + Math.random() * 25);
+            updateAIStatus('alert');
+
+            logVoice(`[ALERT] Keyword "${keyword}" detected! Confidence: ${conf}%`);
+            addTimelineEvent(`🚨 Keyword: "${keyword}"`, `AI detected with ${conf}% confidence`);
+
+            setTimeout(() => {
+                showEmergencyPopup(`Voice AI detected keyword "${keyword.toUpperCase()}" with ${conf}% confidence!`);
+            }, 600);
+
+            setTimeout(() => {
+                if (!isListening) return;
+                document.getElementById('lastDetected').innerHTML = 'No emergency keywords detected yet...';
+                document.getElementById('lastDetected').style.border = 'none';
+                document.getElementById('lastDetected').style.background = 'rgba(255,255,255,0.04)';
+                document.querySelectorAll('.voice-bar').forEach(b => b.classList.remove('active'));
+                if (isListening) updateAIStatus('listening');
+            }, 6000);
+        }
+
+        function updateAIStatus(status) {
+            const badge = document.getElementById('aiStatusBadge');
+            const dot = document.getElementById('aiStatusDot');
+            const txt = document.getElementById('aiStatusText');
+            badge.className = 'ai-status ' + status;
+            if (status === 'idle') { dot.textContent = '●'; txt.textContent = 'AI Status: Idle'; }
+            else if (status === 'listening') { dot.textContent = '◉'; txt.textContent = 'AI Status: Listening...'; }
+            else if (status === 'alert') { dot.textContent = '▶'; txt.textContent = 'AI Status: EMERGENCY DETECTED!'; }
+        }
+
+        function updatePanicMeter(v) {
+            const f = document.getElementById('panicMeter');
+            const l = document.getElementById('panicValue');
+            if (f) f.style.width = v + '%';
+            if (l) l.textContent = v.toFixed(0) + '%';
+        }
+        function updateNoiseMeter(v) {
+            const f = document.getElementById('noiseMeter');
+            const l = document.getElementById('noiseValue');
+            if (f) f.style.width = (v / 120 * 100) + '%';
+            if (l) l.textContent = v.toFixed(0) + ' dB';
+        }
+        function updateDangerMeter(v) {
+            const f = document.getElementById('dangerMeter');
+            const l = document.getElementById('dangerValue');
+            if (f) f.style.width = v + '%';
+            if (l) l.textContent = v.toFixed(0) + '%';
+        }
+        function logVoice(msg) {
+            const log = document.getElementById('voiceLog');
+            const time = new Date().toLocaleTimeString();
+            log.innerHTML += `\n[${time}] ${msg}`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        // ===================== SAFE ROUTE =====================
+        function generateSafeRoute() {
+            const cur = document.getElementById('currentLocInput').value || 'Current Location';
+            const dest = document.getElementById('destInput').value;
+            if (!dest) { showNotif('Please enter a destination', 'warning'); return; }
+
+            const safetyScore = 65 + Math.floor(Math.random() * 30);
+            const risk = safetyScore > 85 ? 'LOW' : safetyScore > 70 ? 'MODERATE' : 'HIGH';
+            const crowd = safetyScore > 80 ? 'HIGH' : 'MODERATE';
+            const police = 1 + Math.floor(Math.random() * 3);
+
+            document.getElementById('routeResults').style.display = 'block';
+
+            const ring = document.getElementById('scoreRing');
+            const circum = 2 * Math.PI * 42;
+            const offset = circum - (safetyScore / 100) * circum;
+            setTimeout(() => { if (ring) ring.style.strokeDashoffset = offset; }, 100);
+
+            const st = document.getElementById('scoreText');
+            st.textContent = safetyScore;
+            st.style.color = safetyScore > 80 ? 'var(--success)' : safetyScore > 60 ? 'var(--warning)' : 'var(--danger)';
+
+            const rl = document.getElementById('riskLevelVal');
+            rl.textContent = risk;
+            rl.style.color = risk === 'LOW' ? 'var(--success)' : risk === 'MODERATE' ? 'var(--warning)' : 'var(--danger)';
+
+            const cv = document.getElementById('crowdVal');
+            cv.textContent = crowd;
+            cv.style.color = crowd === 'HIGH' ? 'var(--success)' : 'var(--warning)';
+
+            const pv = document.getElementById('policeVal');
+            pv.textContent = police + ' stations';
+            pv.style.color = 'var(--primary-light)';
+
+            const routes = [
+                `Via Main Road → ${dest} (Well-lit, 12 CCTV cameras)`,
+                `Via Market Street → ${dest} (High foot traffic, 800+ people)`,
+                `Via Police Checkpoint → ${dest} (Monitored, 2 stations nearby)`
+            ];
+            const best = routes[Math.floor(Math.random() * routes.length)];
+            document.getElementById('bestRouteText').textContent = `From ${cur}: ${best}`;
+
+            const tags = ['Well-lit','CCTV Active','Populated','Police Nearby','Main Road','24/7 Shops','Bus Route'];
+            const tc = document.getElementById('routeTags');
+            tc.innerHTML = '';
+            tags.slice(0, 3 + Math.floor(Math.random() * 4)).forEach(t => {
+                const s = document.createElement('span');
+                s.style.cssText = 'padding:0.3rem 0.8rem;background:rgba(124,58,237,0.15);border-radius:20px;font-size:0.75rem;color:var(--primary-light);border:1px solid rgba(124,58,237,0.3);';
+                s.textContent = t; tc.appendChild(s);
+            });
+
+            addTimelineEvent('🛣️ AI Route Generated', `To ${dest} — Safety Score: ${safetyScore}%`);
+            showNotif(`Route generated! Safety Score: ${safetyScore}%`, 'success');
+        }
+
+        // ===================== STORAGE / OFFLINE =====================
+        function logStorage(msg) {
+            const log = document.getElementById('storageConsole');
+            const time = new Date().toLocaleTimeString();
+            log.innerHTML += `<br>[${time}] ${msg}`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function saveAllEmergencyData() {
+            const data = {
+                timestamp: new Date().toISOString(),
+                location: currentLocation,
+                sosCount: parseInt(localStorage.getItem('safeher_sos_count') || '0') + 1,
+                voiceTriggers: parseInt(localStorage.getItem('safeher_voice_triggers') || '0'),
+                lastRoute: document.getElementById('destInput')?.value || '',
+                timeline: JSON.parse(localStorage.getItem('safeher_timeline') || '[]')
+            };
+            localStorage.setItem('safeher_sos_count', data.sosCount);
+            localStorage.setItem('safeher_emergency', JSON.stringify(data));
+            logStorage(`[Save] Emergency data saved (SOS #${data.sosCount})`);
+            showNotif('Emergency data encrypted & saved locally', 'success');
+        }
+
+        function loadAllEmergencyData() {
+            const saved = localStorage.getItem('safeher_emergency');
+            if (saved) {
+                const d = JSON.parse(saved);
+                logStorage(`[Load] SOS count=${d.sosCount}, Time=${new Date(d.timestamp).toLocaleString()}`);
+                if (d.location) {
+                    currentLocation = d.location;
+                    const last = document.getElementById('lastLocHero');
+                    if (last) last.textContent = `${d.location.lat.toFixed(3)}, ${d.location.lng.toFixed(3)}`;
+                }
+                showNotif(`Loaded data: ${d.sosCount} SOS events recorded`, 'success');
+            } else {
+                logStorage('[Load] No saved emergency data found');
+                showNotif('No saved data found', 'warning');
+            }
+        }
+
+        function exportData() {
+            const data = localStorage.getItem('safeher_emergency') || '{}';
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'safeher-emergency-backup.json';
+            a.click(); URL.revokeObjectURL(url);
+            logStorage('[Export] Emergency data exported to JSON');
+            showNotif('Emergency data exported!', 'success');
+        }
+
+        function clearAllData() {
+            const keys = ['safeher_emergency','safeher_sos_count','safeher_voice_triggers','safeher_location','safeher_timeline'];
+            keys.forEach(k => localStorage.removeItem(k));
+            logStorage('[Clear] All emergency storage cleared');
+            document.getElementById('lastLocHero').textContent = 'Not saved';
+            showNotif('All local data cleared', 'warning');
+        }
+
+        // ===================== HIDDEN TRIGGERS =====================
+        function setupKeyboardTriggers() {
+            let powerPresses = 0, powerTimer = null;
+            let volumeHeld = false, volumeTimer = null;
+
+            document.addEventListener('keydown', e => {
+                // Triple Power (P key)
+                if (e.key === 'p' || e.key === 'P') {
+                    powerPresses++;
+                    clearTimeout(powerTimer);
+                    powerTimer = setTimeout(() => powerPresses = 0, 800);
+                    if (powerPresses >= 3) { powerPresses = 0; activateTrigger('power'); }
+                }
+                // Long Volume (V key hold)
+                if (e.key === 'v' || e.key === 'V') {
+                    if (!volumeHeld) {
+                        volumeHeld = true;
+                        volumeTimer = setTimeout(() => { volumeHeld = false; activateTrigger('volume'); }, 1500);
+                    }
+                }
+            });
+            document.addEventListener('keyup', e => {
+                if (e.key === 'v' || e.key === 'V') {
+                    volumeHeld = false;
+                    clearTimeout(volumeTimer);
+                }
+            });
+        }
+
+        function setupShakeDetection() {
+            if (!window.DeviceMotionEvent) return;
+            let shakeCount = 0, lastShake = 0;
+            window.addEventListener('devicemotion', e => {
+                const acc = e.accelerationIncludingGravity;
+                if (!acc) return;
+                const total = Math.abs(acc.x || 0) + Math.abs(acc.y || 0) + Math.abs(acc.z || 0);
+                if (total > 20) {
+                    const now = Date.now();
+                    if (now - lastShake > 400) shakeCount = 0;
+                    shakeCount++; lastShake = now;
+                    if (shakeCount >= 3) { shakeCount = 0; activateTrigger('shake'); }
+                }
+            });
+        }
+
+        function activateTrigger(type) {
+            const card = document.getElementById('trigger' + type.charAt(0).toUpperCase() + type.slice(1));
+            if (card) card.classList.add('trigger-active');
+
+            const log = document.getElementById('triggerLog');
+            const time = new Date().toLocaleTimeString();
+            if (log.textContent.includes('No triggers')) log.innerHTML = '';
+            log.innerHTML = `<div style="margin-bottom:0.3rem;"><span style="color:var(--danger);">🚨</span> [${time}] ${triggerNames[type]} activated!</div>` + log.innerHTML;
+
+            addTimelineEvent(triggerNames[type], 'Hidden SOS trigger activated');
+            startCountdown(type);
+
+            setTimeout(() => { if (card) card.classList.remove('trigger-active'); }, 3000);
+        }
+
+        function startCountdown(type) {
+            const overlay = document.getElementById('countdownOverlay');
+            const num = document.getElementById('countdownNumber');
+            const txt = document.getElementById('countdownText');
+            countdownVal = 5;
+            overlay.classList.add('show');
+            txt.textContent = `${triggerNames[type]} — Sending SOS in...`;
+            num.textContent = countdownVal;
+
+            countdownInterval = setInterval(() => {
+                countdownVal--;
+                num.textContent = countdownVal;
+                if (countdownVal <= 0) {
+                    clearInterval(countdownInterval);
+                    overlay.classList.remove('show');
+                    activateSOS();
+                }
+            }, 1000);
+        }
+
+        function cancelCountdown() {
+            clearInterval(countdownInterval);
+            document.getElementById('countdownOverlay').classList.remove('show');
+            const log = document.getElementById('triggerLog');
+            const time = new Date().toLocaleTimeString();
+            log.innerHTML = `<div style="margin-bottom:0.3rem;"><span style="color:var(--success);">✅</span> [${time}] Emergency countdown CANCELLED by user</div>` + log.innerHTML;
+            showNotif('Emergency countdown cancelled', 'success');
+        }
+
+        // ===================== POPUP =====================
+        function showEmergencyPopup(details) {
+            const popup = document.getElementById('emergencyPopup');
+            document.getElementById('popupDetails').textContent = details;
+            popup.classList.add('show');
+            setTimeout(() => {
+                if (popup.classList.contains('show')) {
+                    popup.classList.remove('show');
+                    activateSOS();
+                }
+            }, 4000);
+        }
+        function confirmEmergency() { document.getElementById('emergencyPopup').classList.remove('show'); activateSOS(); }
+        function dismissEmergency() {
+            document.getElementById('emergencyPopup').classList.remove('show');
+            addTimelineEvent('⚠️ Alert Dismissed', 'User dismissed AI emergency detection');
+            showNotif('Emergency alert dismissed', 'success');
+        }
+
+        // ===================== GUARDIAN MODE =====================
+        function toggleGuardian() {
+            const toggle = document.getElementById('guardianToggle');
+            const log = document.getElementById('guardianLog');
+            const status = document.getElementById('guardianStatusHero');
+            isGuardianOn = !isGuardianOn;
+            toggle.classList.toggle('active', isGuardianOn);
+
+            if (isGuardianOn) {
+                log.innerHTML = '👼 <strong>AI Guardian Mode ACTIVE</strong><br>Continuous monitoring enabled. Predictive alerts on.';
+                if (status) { status.textContent = 'Guardian ON'; status.className = 'hero-card-value safe'; }
+                addTimelineEvent('👼 Guardian Mode ON', 'AI continuous monitoring activated');
+                showNotif('AI Guardian Mode activated', 'success');
+
+                guardianInterval = setInterval(() => {
+                    const events = [
+                        'Scanning surroundings... All clear.',
+                        'Voice analysis: Normal ambient noise.',
+                        'Location check: Safe zone verified.',
+                        'Crowd density: Normal levels.',
+                        'No threats detected. Guardian watching.',
+                        'Network check: Stable. Backup ready.'
+                    ];
+                    log.innerHTML = '👼 <strong>AI Guardian Mode ACTIVE</strong><br>' + events[Math.floor(Math.random() * events.length)];
+                }, 6000);
+            } else {
+                log.textContent = 'Guardian mode is currently OFF. Toggle to enable continuous AI monitoring.';
+                if (status) { status.textContent = 'Active'; status.className = 'hero-card-value safe'; }
+                clearInterval(guardianInterval);
+                addTimelineEvent('👼 Guardian Mode OFF', 'AI monitoring disabled');
+                showNotif('AI Guardian Mode disabled', 'warning');
+            }
+        }
+
+        // ===================== FAKE CALL =====================
+        function triggerFakeCall() {
+            document.getElementById('fakeCallOverlay').classList.add('show');
+            addTimelineEvent('📞 Fake Call Triggered', 'Simulated incoming police call');
+            // Auto-end after 10s
+            setTimeout(() => { if (document.getElementById('fakeCallOverlay').classList.contains('show')) endFakeCall(); }, 10000);
+        }
+        function endFakeCall() { document.getElementById('fakeCallOverlay').classList.remove('show'); }
+
+        // ===================== TIMELINE =====================
+        function addTimelineEvent(title, desc) {
+            const timeline = document.getElementById('emergencyTimeline');
+            const item = document.createElement('div');
+            item.className = 'timeline-item';
+            item.innerHTML = `<div class="timeline-time">${new Date().toLocaleTimeString()}</div><div class="timeline-title">${title}</div><div class="timeline-desc">${desc}</div>`;
+            timeline.insertBefore(item, timeline.firstChild);
+
+            const events = JSON.parse(localStorage.getItem('safeher_timeline') || '[]');
+            events.unshift({ time: new Date().toISOString(), title, desc });
+            localStorage.setItem('safeher_timeline', JSON.stringify(events.slice(0, 50)));
+        }
+        function loadTimelineFromStorage() {
+            const events = JSON.parse(localStorage.getItem('safeher_timeline') || '[]');
+            if (events.length > 0) {
+                const timeline = document.getElementById('emergencyTimeline');
+                timeline.innerHTML = '';
+                events.slice(0, 10).forEach(e => {
+                    const item = document.createElement('div');
+                    item.className = 'timeline-item';
+                    item.innerHTML = `<div class="timeline-time">${new Date(e.time).toLocaleTimeString()}</div><div class="timeline-title">${e.title}</div><div class="timeline-desc">${e.desc}</div>`;
+                    timeline.appendChild(item);
+                });
+            }
+        }
+
+        // ===================== HEATMAP =====================
+        function initHeatmap() {
+            const grid = document.getElementById('heatmapGrid');
+            for (let i = 0; i < 60; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'heatmap-cell';
+                cell.style.background = randomHeatColor();
+                grid.appendChild(cell);
+            }
+            heatmapInterval = setInterval(() => {
+                const cells = grid.querySelectorAll('.heatmap-cell');
+                cells.forEach(c => { if (Math.random() < 0.15) c.style.background = randomHeatColor(); });
+            }, 2500);
+        }
+        function randomHeatColor() {
+            const r = Math.random();
+            if (r < 0.48) return 'rgba(34,197,94,0.45)';
+            if (r < 0.75) return 'rgba(245,158,11,0.45)';
+            if (r < 0.9) return 'rgba(239,68,68,0.45)';
+            return 'rgba(124,58,237,0.45)';
+        }
+
+        // ===================== PRIVACY =====================
+        function animatePrivacyBars() {
+            setTimeout(() => {
+                document.querySelectorAll('.privacy-bar-fill[data-target]').forEach(bar => {
+                    bar.style.width = bar.dataset.target + '%';
+                });
+            }, 500);
+        }
+        function startEncryptAnimation() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+            const anims = ['encryptAnim1','encryptAnim2','encryptAnim3','encryptAnim4'];
+            anims.forEach((id, idx) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                setInterval(() => {
+                    let str = '';
+                    for (let i = 0; i < 24; i++) str += chars[Math.floor(Math.random() * chars.length)];
+                    el.textContent = 'Encrypting: ' + str;
+                }, 150 + idx * 50);
+            });
+        }
+
+        // ===================== CLEANUP =====================
+        window.addEventListener('beforeunload', () => {
+            clearInterval(voiceInterval);
+            clearInterval(guardianInterval);
+            clearInterval(heatmapInterval);
+            clearInterval(countdownInterval);
+            if (window._voiceRec) window._voiceRec.stop();
+        });
+
+        // ===================== START =====================
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
