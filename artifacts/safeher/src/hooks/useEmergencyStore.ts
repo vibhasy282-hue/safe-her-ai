@@ -120,35 +120,67 @@ export const useEmergencyStore = create<EmergencyState>((set, get) => ({
     set({ sosActive: true, sosCount: count });
 
     // Send real SMS to trusted contacts
+    const rawContacts = localStorage.getItem('safeher_contacts');
+    console.log('[SafeHer SOS] Raw safeher_contacts from localStorage:', rawContacts);
+
+    let contacts: string[] = [];
     try {
-      const contacts: string[] = JSON.parse(localStorage.getItem('safeher_contacts') || '[]');
-      if (contacts.length === 0) {
-        get().setNotification('⚠️ No emergency contacts saved! Scroll down to add contacts.');
-        get().addTimelineEvent('⚠️ No Contacts', 'Add trusted contacts so SMS alerts can be sent.');
-      } else {
-        get().setNotification('📡 Sending SOS SMS to your contacts...');
-        fetch('/api/sms/sos', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contacts, location: get().location }),
+      contacts = JSON.parse(rawContacts || '[]');
+    } catch (parseErr) {
+      console.error('[SafeHer SOS] Failed to parse contacts:', parseErr);
+    }
+
+    console.log('[SafeHer SOS] Parsed contacts array:', contacts);
+    console.log('[SafeHer SOS] Number of contacts:', contacts.length);
+
+    if (contacts.length === 0) {
+      console.warn('[SafeHer SOS] No contacts found — SMS will NOT be sent.');
+      get().setNotification('⚠️ No emergency contacts! Scroll down to add contacts first.');
+      get().addTimelineEvent('⚠️ No Contacts', 'Add trusted contacts so SMS alerts can be sent.');
+    } else {
+      const location = get().location;
+      const requestBody = { contacts, location };
+      console.log('[SafeHer SOS] Sending SMS to recipients:', contacts);
+      console.log('[SafeHer SOS] Request body:', JSON.stringify(requestBody));
+      console.log('[SafeHer SOS] Fetching: /api/sms/sos');
+
+      get().setNotification(`📡 Sending SOS SMS to ${contacts.length} contact(s): ${contacts.join(', ')}`);
+
+      fetch('/api/sms/sos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody),
+      })
+        .then(r => {
+          console.log('[SafeHer SOS] HTTP response status:', r.status);
+          return r.json();
         })
-          .then(r => r.json())
-          .then((result: { sent: string[]; failed: { to: string; error: string }[] }) => {
-            if (result.sent?.length > 0) {
-              get().setNotification(`✅ SMS sent to ${result.sent.length} contact(s)!`);
-              get().addTimelineEvent('📱 SMS Sent', `Alert sent to: ${result.sent.join(', ')}`);
-            }
-            if (result.failed?.length > 0) {
-              get().setNotification(`❌ SMS failed for: ${result.failed.map((f: { to: string; error: string }) => f.to).join(', ')}`);
-              get().addTimelineEvent('⚠️ SMS Failed', `Failed: ${result.failed.map((f: { to: string; error: string }) => f.to).join(', ')} — verify number in Twilio console`);
-            }
-          })
-          .catch(() => {
-            get().setNotification('❌ Could not reach SMS server. Check connection.');
-            get().addTimelineEvent('⚠️ SMS Error', 'Could not reach SMS server.');
-          });
-      }
-    } catch (_e) { /* ignore */ }
+        .then((result: { sent: string[]; failed: { to: string; error: string }[]; error?: string }) => {
+          console.log('[SafeHer SOS] API response:', JSON.stringify(result));
+          if (result.error) {
+            console.error('[SafeHer SOS] Server error:', result.error);
+            get().setNotification(`❌ Server error: ${result.error}`);
+            get().addTimelineEvent('⚠️ SMS Error', result.error);
+            return;
+          }
+          if (result.sent?.length > 0) {
+            console.log('[SafeHer SOS] Successfully sent to:', result.sent);
+            get().setNotification(`✅ SMS sent to: ${result.sent.join(', ')}`);
+            get().addTimelineEvent('📱 SMS Sent', `Alert sent to: ${result.sent.join(', ')}`);
+          }
+          if (result.failed?.length > 0) {
+            console.error('[SafeHer SOS] Failed to send to:', result.failed);
+            const failDetails = result.failed.map((f: { to: string; error: string }) => `${f.to}: ${f.error}`).join(' | ');
+            get().setNotification(`❌ SMS failed — ${result.failed.map((f: { to: string; error: string }) => f.to).join(', ')}`);
+            get().addTimelineEvent('⚠️ SMS Failed', failDetails);
+          }
+        })
+        .catch((fetchErr: unknown) => {
+          console.error('[SafeHer SOS] Fetch error:', fetchErr);
+          get().setNotification('❌ Could not reach SMS server. Check your connection.');
+          get().addTimelineEvent('⚠️ SMS Error', `Fetch failed: ${String(fetchErr)}`);
+        });
+    }
   },
 
   stopSOS: () => {
