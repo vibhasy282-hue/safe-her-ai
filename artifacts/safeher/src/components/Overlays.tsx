@@ -8,6 +8,7 @@ export default function Overlays() {
     fakeCallActive, endFakeCall,
     popupActive, popupDetails, dismissPopup, activateSOS,
     sosActive, stopSOS,
+    notification,
   } = useEmergencyStore();
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -130,6 +131,26 @@ export default function Overlays() {
             </div>
           </div>
         </>
+      )}
+
+      {/* Floating notification banner */}
+      {notification && (
+        <div style={{
+          position: 'fixed', top: '1.5rem', left: '50%',
+          transform: 'translateX(-50%)',
+          background: notification.startsWith('✅') ? 'rgba(22,101,52,0.97)' :
+                      notification.startsWith('❌') ? 'rgba(127,29,29,0.97)' :
+                      notification.startsWith('⚠️') ? 'rgba(120,53,15,0.97)' :
+                      'rgba(30,27,75,0.97)',
+          border: `1px solid ${notification.startsWith('✅') ? '#22c55e' : notification.startsWith('❌') ? '#ef4444' : notification.startsWith('⚠️') ? '#f59e0b' : '#7c3aed'}`,
+          borderRadius: 14, padding: '0.9rem 1.6rem',
+          color: '#f8fafc', fontWeight: 600, fontSize: '1rem',
+          zIndex: 20000, maxWidth: '90vw', textAlign: 'center',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+          animation: 'fadeIn 0.3s ease'
+        }}>
+          {notification}
+        </div>
       )}
     </>
   );

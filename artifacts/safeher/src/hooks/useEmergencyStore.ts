@@ -20,6 +20,8 @@ interface EmergencyState {
   fakeCallActive: boolean;
   popupActive: boolean;
   popupDetails: string;
+  notification: string;
+  setNotification: (msg: string) => void;
   setOnline: (status: boolean) => void;
   activateSOS: () => void;
   stopSOS: () => void;
@@ -88,6 +90,12 @@ export const useEmergencyStore = create<EmergencyState>((set, get) => ({
   fakeCallActive: false,
   popupActive: false,
   popupDetails: '',
+  notification: '',
+
+  setNotification: (msg) => {
+    set({ notification: msg });
+    setTimeout(() => set({ notification: '' }), 5000);
+  },
 
   setOnline: (status) => set({ isOnline: status }),
 
@@ -114,7 +122,11 @@ export const useEmergencyStore = create<EmergencyState>((set, get) => ({
     // Send real SMS to trusted contacts
     try {
       const contacts: string[] = JSON.parse(localStorage.getItem('safeher_contacts') || '[]');
-      if (contacts.length > 0) {
+      if (contacts.length === 0) {
+        get().setNotification('⚠️ No emergency contacts saved! Scroll down to add contacts.');
+        get().addTimelineEvent('⚠️ No Contacts', 'Add trusted contacts so SMS alerts can be sent.');
+      } else {
+        get().setNotification('📡 Sending SOS SMS to your contacts...');
         fetch('/api/sms/sos', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -123,13 +135,16 @@ export const useEmergencyStore = create<EmergencyState>((set, get) => ({
           .then(r => r.json())
           .then((result: { sent: string[]; failed: { to: string; error: string }[] }) => {
             if (result.sent?.length > 0) {
+              get().setNotification(`✅ SMS sent to ${result.sent.length} contact(s)!`);
               get().addTimelineEvent('📱 SMS Sent', `Alert sent to: ${result.sent.join(', ')}`);
             }
             if (result.failed?.length > 0) {
-              get().addTimelineEvent('⚠️ SMS Failed', `Failed: ${result.failed.map((f: { to: string; error: string }) => f.to).join(', ')}`);
+              get().setNotification(`❌ SMS failed for: ${result.failed.map((f: { to: string; error: string }) => f.to).join(', ')}`);
+              get().addTimelineEvent('⚠️ SMS Failed', `Failed: ${result.failed.map((f: { to: string; error: string }) => f.to).join(', ')} — verify number in Twilio console`);
             }
           })
           .catch(() => {
+            get().setNotification('❌ Could not reach SMS server. Check connection.');
             get().addTimelineEvent('⚠️ SMS Error', 'Could not reach SMS server.');
           });
       }
