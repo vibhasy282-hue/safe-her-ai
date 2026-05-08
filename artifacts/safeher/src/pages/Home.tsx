@@ -7,6 +7,7 @@ import OfflineEmergency from '@/components/OfflineEmergency';
 import SOSHiddenTriggers from '@/components/SOSHiddenTriggers';
 import PrivacyNetwork from '@/components/PrivacyNetwork';
 import ExtraFeatures from '@/components/ExtraFeatures';
+import TrustedContacts from '@/components/TrustedContacts';
 import FloatingSOS from '@/components/FloatingSOS';
 import Overlays from '@/components/Overlays';
 import { useEmergencyStore } from '@/hooks/useEmergencyStore';
@@ -62,6 +63,10 @@ export default function Home() {
         <div className="h-[1px] mx-8 bg-gradient-to-r from-transparent via-white/10 to-transparent my-4"></div>
         
         <ExtraFeatures />
+
+        <div className="h-[1px] mx-8 bg-gradient-to-r from-transparent via-white/10 to-transparent my-4"></div>
+
+        <TrustedContacts />
       </main>
 
       <footer className="text-center p-8 text-text-muted text-sm border-t border-white/10 mt-8 relative z-10">

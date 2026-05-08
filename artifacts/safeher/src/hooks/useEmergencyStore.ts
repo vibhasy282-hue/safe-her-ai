@@ -93,11 +93,10 @@ export const useEmergencyStore = create<EmergencyState>((set, get) => ({
 
   activateSOS: () => {
     if (get().sosActive) return;
-    
+
     const count = get().sosCount + 1;
     localStorage.setItem('safeher_sos_count', count.toString());
-    
-    // Save emergency state
+
     const data = {
       time: new Date().toISOString(),
       location: get().location,
@@ -105,12 +104,36 @@ export const useEmergencyStore = create<EmergencyState>((set, get) => ({
       device: navigator.userAgent
     };
     localStorage.setItem('safeher_emergency', JSON.stringify(data));
-    
+
     if (navigator.vibrate) navigator.vibrate([500, 200, 500, 200, 500]);
     playAlarm();
-    
+
     get().addTimelineEvent('🚨 SOS ACTIVATED', 'Emergency signal and location broadcasted locally.');
     set({ sosActive: true, sosCount: count });
+
+    // Send real SMS to trusted contacts
+    try {
+      const contacts: string[] = JSON.parse(localStorage.getItem('safeher_contacts') || '[]');
+      if (contacts.length > 0) {
+        fetch('/api/sms/sos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contacts, location: get().location }),
+        })
+          .then(r => r.json())
+          .then((result: { sent: string[]; failed: { to: string; error: string }[] }) => {
+            if (result.sent?.length > 0) {
+              get().addTimelineEvent('📱 SMS Sent', `Alert sent to: ${result.sent.join(', ')}`);
+            }
+            if (result.failed?.length > 0) {
+              get().addTimelineEvent('⚠️ SMS Failed', `Failed: ${result.failed.map((f: { to: string; error: string }) => f.to).join(', ')}`);
+            }
+          })
+          .catch(() => {
+            get().addTimelineEvent('⚠️ SMS Error', 'Could not reach SMS server.');
+          });
+      }
+    } catch (_e) { /* ignore */ }
   },
 
   stopSOS: () => {
