@@ -13,12 +13,17 @@ export default function Navbar() {
       <div className="nav-logo" style={{ fontSize: '1.5rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
         🛡️ SafeHer
       </div>
-      <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: '1.2rem', alignItems: 'center', flexWrap: 'wrap' }}>
         <a href="#hero" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.9rem' }}>Home</a>
         <a href="#voice" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.9rem' }}>AI Voice</a>
         <a href="#route" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.9rem' }}>Safe Route</a>
         <a href="#triggers" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.9rem' }}>SOS Triggers</a>
-        <a href="#privacy" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.9rem' }}>Privacy</a>
+        <a href="#contacts" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.9rem' }}>Contacts</a>
+        <a href="#checkin" style={{
+          color: '#a78bfa', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600,
+          padding: '0.3rem 0.8rem', borderRadius: 8,
+          background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)'
+        }}>⏱️ Check-In</a>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: isOnline ? '#22c55e' : '#ef4444' }}>
         <span className={isOnline ? 'online-dot' : ''} style={{
